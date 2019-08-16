@@ -1,0 +1,38 @@
+# Find an example for your language and learn about the core features through
+# the guided tour:
+# https://docs.semaphoreci.com/category/58-programming-languages
+# https://docs.semaphoreci.com/category/56-guided-tour
+version: v1.0
+name: Hello Semaphore
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: CI Tests
+    task:
+      prologue:
+        commands:
+          - sudo apt-get update && sudo apt-get install -y sqlite3 imagemagick mongodb
+          - checkout
+          - sem-version ruby 2.5.1
+          - cache restore
+          - bundle install --deployment --path vendor/bundle
+      epilogue:
+        commands:
+          - cache store
+      env_vars:
+        - name: RAILS_ENV
+          value: test
+      jobs:
+      - name: Testing!
+        commands:
+          - bundle exec rake test CKEDITOR_BACKEND=paperclip
+          - bundle exec rake test CKEDITOR_BACKEND=carrierwave
+          - bundle exec rake test CKEDITOR_BACKEND=dragonfly
+          - bundle exec rake test CKEDITOR_ORM=mongoid
+          - bundle exec rake test CKEDITOR_ORM=mongoid CKEDITOR_BACKEND=shrine
+          - bundle exec rake test:controllers
+          - bundle exec rake test:generators
+          - bundle exec rake test:integration
+          - bundle exec rake test:models
